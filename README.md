@@ -49,7 +49,7 @@ FormNotify lets you create dynamic forms, receive public submissions, and send n
 # Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/formnotify-api.git
+git clone https://github.com/Vlad-Timofti/formnotify-api.git
 cd formnotify-api
 npm install
 cp .env.example .env
