@@ -1,0 +1,27 @@
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: formnotify-mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: formnotify
+      MYSQL_USER: formnotify
+      MYSQL_PASSWORD: formnotify
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: formnotify-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+    ports:
+      - "8080:80"
+
+volumes:
+  mariadb_data:

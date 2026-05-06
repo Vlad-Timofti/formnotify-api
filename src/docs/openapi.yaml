@@ -1,0 +1,354 @@
+openapi: 3.0.0
+
+info:
+  title: FormNotify API
+  version: 1.0.0
+  description: API open-source pentru formulare dinamice și notificări.
+
+servers:
+  - url: http://localhost:4000
+
+paths:
+  /:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: API is running
+
+  /auth/register:
+    post:
+      summary: Register organization and owner user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - organizationName
+                - name
+                - email
+                - password
+              properties:
+                organizationName:
+                  type: string
+                  example: Demo Company
+                name:
+                  type: string
+                  example: Admin
+                email:
+                  type: string
+                  example: admin@test.com
+                password:
+                  type: string
+                  example: "123456"
+      responses:
+        "201":
+          description: Account created
+
+  /auth/login:
+    post:
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  example: admin@test.com
+                password:
+                  type: string
+                  example: "123456"
+      responses:
+        "200":
+          description: Login successful
+
+  /auth/me:
+    get:
+      summary: Get current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user data
+
+  /forms:
+    get:
+      summary: List forms
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Forms list
+
+    post:
+      summary: Create form
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - fields
+              properties:
+                title:
+                  type: string
+                  example: Contact Form
+                description:
+                  type: string
+                  example: Basic contact form
+                isActive:
+                  type: boolean
+                  example: true
+                fields:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/FormField"
+      responses:
+        "201":
+          description: Form created
+
+  /forms/{id}:
+    get:
+      summary: Get form details
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Form details
+
+    patch:
+      summary: Update form
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Form updated
+
+    delete:
+      summary: Delete form
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Form deleted
+
+  /public/forms/{formId}/submit:
+    post:
+      summary: Submit public form
+      parameters:
+        - in: path
+          name: formId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                full_name: Ion Popescu
+                email: ion@test.com
+                message: Salut, vreau mai multe detalii.
+      responses:
+        "201":
+          description: Submission received
+
+  /forms/{formId}/submissions:
+    get:
+      summary: List form submissions
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: formId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Submissions list
+
+  /submissions/{id}:
+    get:
+      summary: Get submission details
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Submission details
+
+  /notification-channels:
+    get:
+      summary: List notification channels
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Notification channels list
+
+    post:
+      summary: Create notification channel
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required:
+                    - type
+                    - name
+                    - config
+                  properties:
+                    type:
+                      type: string
+                      example: webhook
+                    name:
+                      type: string
+                      example: Test Webhook
+                    config:
+                      type: object
+                      properties:
+                        url:
+                          type: string
+                          example: https://webhook.site/test
+
+                - type: object
+                  required:
+                    - type
+                    - name
+                    - config
+                  properties:
+                    type:
+                      type: string
+                      example: email
+                    name:
+                      type: string
+                      example: Admin Email
+                    config:
+                      type: object
+                      properties:
+                        to:
+                          type: string
+                          example: admin@example.com
+      responses:
+        "201":
+          description: Notification channel created
+
+  /notification-channels/{id}:
+    delete:
+      summary: Delete notification channel
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Notification channel deleted
+
+  /notification-channels/logs:
+    get:
+      summary: List notification logs
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Notification logs list
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    FormField:
+      type: object
+      required:
+        - id
+        - type
+        - label
+      properties:
+        id:
+          type: string
+          example: full_name
+        type:
+          type: string
+          enum:
+            - text
+            - email
+            - number
+            - textarea
+            - select
+            - checkbox
+            - radio
+            - phone
+            - date
+          example: text
+        label:
+          type: string
+          example: Full Name
+        placeholder:
+          type: string
+          example: John Doe
+        required:
+          type: boolean
+          example: true
+        options:
+          type: array
+          items:
+            type: string
+          example:
+            - Option A
+            - Option B
